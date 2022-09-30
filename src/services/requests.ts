@@ -35,3 +35,11 @@ export const getViaToken = (uriToken: string) => {
     }
     return axios.get(uri, opt)
 }
+
+export const getUserById = (userId: string) => {
+    const uri = `${hostGraph}/users/${userId}`;
+    const opt = {
+        headers: { Accept: 'application/json', Authorization: token }
+    }
+    return axios.get(uri, opt)
+}

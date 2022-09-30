@@ -3,8 +3,10 @@ import './App.css';
 import { MDBContainer } from 'mdb-react-ui-kit'
 import { getChatMessages, getChats, getMe, getViaToken } from './services/requests';
 
+import { GrUpdate } from 'react-icons/gr'
+import { AiOutlineUserAdd } from 'react-icons/ai'
 import { BsExclamationLg } from 'react-icons/bs'
-import { BiQuestionMark, BiPhoneCall, BiUpArrow, BiDownArrow } from 'react-icons/bi'
+import { BiQuestionMark, BiPhoneCall, BiUpArrow, BiDownArrow, BiRevision } from 'react-icons/bi'
 import { FaBell } from 'react-icons/fa'
 import { HiUserGroup, HiUser } from 'react-icons/hi'
 import styles from './App.module.scss';
@@ -14,8 +16,13 @@ import classNames from 'classnames'
 import moment from 'moment'
 import 'moment/locale/pt-br'
 moment.locale('pt-br')
-
 LuxonSettings.defaultLocale = "pt-BR";
+
+const loadingsDefault = {
+  gettingChats: false,
+  gettingMessages: false
+
+}
 
 export default function App() {
 
@@ -24,24 +31,27 @@ export default function App() {
   const [me, setMe] = useState<IMe>();
   const [selectedChat, selectChat] = useState<IChat>();
   const [chatsNextLink, setChatsNextLink] = useState<string>("");
+  // const [loads, setLoads] = useState(loadingsDefault);
 
-  const handleAddChats = (newChats: IChat[]) => {
+  useEffect(() => console.log(selectedChat), [selectedChat])
 
-    newChats.map(chat => {
-      
+  const handleAddChats = (chats: IChat[]) => {
+
+    const newChats = chats.map(chat => {
+
       let topic: string = chat.topic;
+
+      const membersWithoutMe = chat.members.filter(member => member.userId !== me?.id)
 
       if (chat.chatType === 'oneOnOne' && chat.members.length > 1) {
 
-        topic = chat.members
-          .filter(member => member.userId !== me?.id)
+        topic = membersWithoutMe
           .map(member => member.displayName)
           .join(', ')
 
       } else if (chat.chatType === 'group' && !chat.topic) {
 
-        topic = chat.members
-          .filter(member => member.userId !== me?.id)
+        topic = membersWithoutMe
           .map(member => member.displayName.split(' ')[0])
           .join(', ')
       }
@@ -57,12 +67,8 @@ export default function App() {
 
   }
 
-
-  useEffect(() => {
+  const updateAll = () => {
     setChats([])
-    getMe()
-      .catch(e => alert(e))
-      .then(meData => setMe(meData?.data))
 
     getChats()
       .catch(e => alert(e))
@@ -70,15 +76,22 @@ export default function App() {
         setChatsNextLink(chatsData?.data['@odata.nextLink'] || '');
         handleAddChats(chatsData?.data.value)
       })
+
+  }
+
+
+  useEffect(() => {
+    getMe()
+      .catch(e => alert(e))
+      .then(meData => setMe(meData?.data))
+    updateAll();
   }, [])
 
   useEffect(() => {
-    // console.log(selectedChat)
     if (selectedChat && !selectedChat?.messages) {
 
       getChatMessages(selectedChat.id)
         .then(chatData => {
-          console.log(chatData.data['@odata.nextLink'])
           selectChat((prev: any) =>
             ({ ...prev, messages: chatData.data.value, getNextMessages: chatData.data['@odata.nextLink'] })
           )
@@ -101,16 +114,12 @@ export default function App() {
   const handleGetMoreMessages = () => {
     if (selectedChat?.getNextMessages)
       getViaToken(selectedChat?.getNextMessages as string).then(olderMessages => {
-        console.log(olderMessages.data)
-
         selectChat((prev: any) =>
-        (
-          {
-            ...prev,
-            messages: [...prev.messages, ...olderMessages.data.value],
-            getNextMessages: olderMessages.data['@odata.nextLink']
-          }
-        ))
+        ({
+          ...prev,
+          messages: [...prev.messages, ...olderMessages.data.value],
+          getNextMessages: olderMessages.data['@odata.nextLink']
+        }))
       })
   }
 
@@ -120,7 +129,12 @@ export default function App() {
     <MDBContainer className='m-1 d-flex border border-1 p-1 mx-auto rounded app'>
       <div className='bg-dark w-25'>
         <div className='d-flex flex-column pb-2'>
-          <h1 className='contactsTitle'>Chats</h1>
+          <div className="d-flex flex-row align-items-center">
+            <h1 className='contactsTitle'>Chats</h1>
+            <button className='glow-on-hover' onClick={updateAll}>
+              <BiRevision className='text-light' />
+            </button>
+          </div>
           <div className='ps-3 pt-2'>
             <input
               value={search}
@@ -132,8 +146,8 @@ export default function App() {
         </div>
 
         <Chats
-          handleGetMoreChat={handleGetMoreChat}
           chatsNextLink={chatsNextLink}
+          handleGetMoreChat={handleGetMoreChat}
           contacts={filteredChats}
           selectChat={selectChat}
           me={me}
@@ -244,7 +258,11 @@ const ChatScreen = (pr: { selectedChat: IChat, handleGetMoreMessages: any, me?: 
 
                         <div className="d-flex flex-row align-items-center">
                           <div className='me-2'>
-                            {msg.eventDetail.callEventType === 'call' ? <BiPhoneCall className='icon' /> : <BiQuestionMark className='icon' />}
+                            {msg.eventDetail.callEventType === 'call' ?
+                              <BiPhoneCall className='icon' />
+                              : (msg.eventDetail['@odata.type'] === "#microsoft.graph.membersAddedEventMessageDetail" ?
+                                <AiOutlineUserAdd className='icon' />
+                                : <BiQuestionMark className='icon' />)}
                           </div>
                           <div className='d-flex flex-column chat_sender'>
                             <span className='pb-1'>
@@ -320,20 +338,20 @@ const Chats = (pr: any) => {
         )
       }
       {
-        pr.chatsNextLink &&
-        <div
-          className={classNames(
-            'border border-1 rounded m-1 contactItem px-2 py-1 d-flex flex-row align-items-center text-center justify-content-between',
-            styles.magic_btn,
-            styles.magic
-          )}
-          onClick={pr.handleGetMoreChat}
-        >
-          <BiDownArrow />
-          Obter mais chats...
-          <BiDownArrow />
+        pr.chatsNextLink ?
+          <div
+            className={classNames(
+              'border border-1 rounded m-1 contactItem px-2 py-1 d-flex flex-row align-items-center text-center justify-content-between',
+              styles.magic_btn,
+              styles.magic
+            )}
+            onClick={pr.handleGetMoreChat}
+          >
+            <BiDownArrow />
+            Obter mais chats...
+            <BiDownArrow />
 
-        </div>
+          </div> : null
       }
     </div>
   )
