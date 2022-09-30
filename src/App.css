@@ -1,38 +1,109 @@
-.App {
-  text-align: center;
+.app {
+    height: 99vh !important;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.contactsList {
+    overflow: auto;
+    height: 85vh;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+.contactItem:hover {
+    background-color: #545454;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+.contactItem {
+    display: flex;
+    cursor: pointer;
 }
 
-.App-link {
-  color: #61dafb;
+.contactsTitle {
+    padding: 7px 0 0 15px;
+    height: 5vh;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.topicIcon {
+    margin-bottom: 5px;
+    margin-right: 12px;
+}
+
+.topicText {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.searchText {
+    font-size: 13px;
+    line-height: 2em;
+}
+
+.chat_topic {
+    line-height: 1em;
+    margin: 0;
+}
+
+.chat_group_members {
+    text-overflow: ellipsis;
+    overflow: auto;
+    width: 100% !important;
+    height: 54px;
+}
+
+.chat_messages {
+    padding: 0;
+    margin: 0;
+    overflow: auto;
+    height: 80vh;
+    background-color: #1F1F1F;
+}
+
+.message_container {
+    padding: 10px;
+}
+
+.message {
+    border-radius: 10px;
+    line-height: 1.4em;
+    word-break: break-word;
+    padding: 2px 12px 6px;
+}
+
+.systemMessage {
+    background-color: #1F281F;
+    text-align: start;
+    margin-left: 10px;
+    font-size: 20px;
+}
+
+.myMessage {
+    background-color: #2F2F4A;
+    text-align: end;
+    margin-right: 20px;
+}
+
+.notMyMessage {
+    background-color: #292929;
+    margin-left: 20px;
+}
+
+.myMessage p,
+.notMyMessage p {
+    padding: 0;
+    margin: 0;
+}
+
+.chat_sender {
+    font-size: 12px;
+    color: #777;
+    line-height: 1em;
+}
+
+.chat_reactions {
+    font-size: 16px !important;
+    line-height: 1em;
+    padding: 2px;
+}
+
+.icon {
+    margin-bottom: 3px;
 }

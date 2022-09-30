@@ -1,0 +1,43 @@
+// Basic Button Style
+.magic_btn {
+    box-sizing: border-box;
+    appearance: none;
+    background-color: transparent;
+    border: 2px solid red;
+    border-radius: 0.6em;
+    color: red;
+    cursor: pointer;
+    display: flex;
+    align-self: center;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1;
+    margin: 20px;
+    padding: 1.2em 2.8em;
+    text-decoration: none;
+    text-align: center;
+    text-transform: uppercase;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    &:hover,
+    &:focus {
+        color: #fff;
+        outline: 0;
+    }
+}
+
+//BUTTON 2
+.magic {
+    border-radius: 3em;
+    border-color: #737ADD;
+    color: #fff;
+    background: {
+        image: linear-gradient(to right, transparentize(#737ADD, 0.4), transparentize(#737ADD, 0.4) 5%, #737ADD 5%, #737ADD 10%, transparentize(#737ADD, 0.4) 10%, transparentize(#737ADD, 0.4) 15%, #737ADD 15%, #737ADD 20%, transparentize(#737ADD, 0.4) 20%, transparentize(#737ADD, 0.4) 25%, #737ADD 25%, #737ADD 30%, transparentize(#737ADD, 0.4) 30%, transparentize(#737ADD, 0.4) 35%, #737ADD 35%, #737ADD 40%, transparentize(#737ADD, 0.4) 40%, transparentize(#737ADD, 0.4) 45%, #737ADD 45%, #737ADD 50%, transparentize(#737ADD, 0.4) 50%, transparentize(#737ADD, 0.4) 55%, #737ADD 55%, #737ADD 60%, transparentize(#737ADD, 0.4) 60%, transparentize(#737ADD, 0.4) 65%, #737ADD 65%, #737ADD 70%, transparentize(#737ADD, 0.4) 70%, transparentize(#737ADD, 0.4) 75%, #737ADD 75%, #737ADD 80%, transparentize(#737ADD, 0.4) 80%, transparentize(#737ADD, 0.4) 85%, #737ADD 85%, #737ADD 90%, transparentize(#737ADD, 0.4) 90%, transparentize(#737ADD, 0.4) 95%, #737ADD 95%, #737ADD 100%);
+        position: 0 0;
+        size: 100%;
+    }
+    transition: background 300ms ease-in-out;
+    &:hover {
+        background-position: 100px;
+    }
+}
