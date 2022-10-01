@@ -1,3 +1,100 @@
+.container {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    bottom: 10px;
+    left: 10px;
+    display: flex !important;
+    flex-direction: row !important;
+    margin-right: 10px;
+}
+
+.chat {
+    &_selected {
+        background-color: #474747;
+        color: #EEE;
+        box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
+    }
+    &_list {
+        display: flex;
+        flex-direction: column;
+        width: 25%;
+        max-width: 400px;
+        &_topic {
+            padding: 5px 0 15px 0;
+            font-size: 40px;
+        }
+        &_items {
+            white-space: nowrap;
+            overflow-y: auto;
+            overflow-x: hidden;
+            text-overflow: ellipsis;
+            height: 90vh;
+            &_item {
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                // vertical-align: middle !important;
+                margin-right: 5px;
+                padding: auto 0;
+                display: block;
+                line-height: 1em;
+                font-size: 13px !important;
+                &_icon {
+                    padding-right: 8px;
+                }
+            }
+            &_selected {
+                background-color: #474747;
+                color: #EEE;
+                box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
+            }
+            /* width */
+            &::-webkit-scrollbar {
+                width: 6px;
+            }
+            /* Track */
+            &::-webkit-scrollbar-track {
+                background: #313247;
+            }
+            /* Handle */
+            &::-webkit-scrollbar-thumb {
+                background: #737ADD;
+            }
+            /* Handle on hover */
+            &::-webkit-scrollbar-thumb:hover {
+                background: #7F86EF;
+            }
+        }
+    }
+    &_messages {
+        width: 70%;
+        overflow: auto;
+        &_topic,
+        &_members {
+            overflow: auto;
+            max-height: 35px;
+            /* width */
+            &::-webkit-scrollbar {
+                width: 6px;
+            }
+            /* Track */
+            &::-webkit-scrollbar-track {
+                background: #313247;
+            }
+            /* Handle */
+            &::-webkit-scrollbar-thumb {
+                background: #737ADD;
+            }
+            /* Handle on hover */
+            &::-webkit-scrollbar-thumb:hover {
+                background: #7F86EF;
+            }
+        }
+        &_screen {}
+    }
+}
+
 // Basic Button Style
 .magic_btn {
     box-sizing: border-box;
