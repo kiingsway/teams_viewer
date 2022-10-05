@@ -11,15 +11,17 @@
 
 .chat {
     &_selected {
-        background-color: #474747;
+        background-color: #474747 !important;
         color: #EEE;
         box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
     }
     &_list {
         display: flex;
         flex-direction: column;
-        width: 25%;
-        max-width: 400px;
+        resize: horizontal;
+        overflow: auto;
+        min-width: 200px;
+        max-width: 600px;
         &_topic {
             padding: 5px 0 15px 0;
             font-size: 40px;
@@ -91,7 +93,9 @@
                 background: #7F86EF;
             }
         }
-        &_screen {}
+        &_screen {
+            height: 100%;
+        }
     }
 }
 

@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import './App.css';
-import { MDBContainer } from 'mdb-react-ui-kit'
 import { getChatMessages, getChats, getMe, getViaToken } from './services/requests';
 
 import { AiOutlineUserAdd } from 'react-icons/ai'
 import { BsExclamationLg } from 'react-icons/bs'
-import { BiQuestionMark, BiPhoneCall, BiUpArrow, BiDownArrow, BiRevision } from 'react-icons/bi'
+import { BiQuestionMark, BiPhoneCall, BiUpArrow, BiDownArrow } from 'react-icons/bi'
 import { FaBell } from 'react-icons/fa'
 import { HiUserGroup, HiUser } from 'react-icons/hi'
 import styles from './App.module.scss';
@@ -14,12 +13,8 @@ import { DateTime, Settings as LuxonSettings } from 'luxon'
 import classNames from 'classnames'
 import moment from 'moment'
 import 'moment/locale/pt-br'
-import { Button, MenuItem, MenuList, Body1, Caption1, Tab, TabList, Input, Label, Title1, Title2, Title3 } from '@fluentui/react-components'
-import {
-  Card, CardHeader,
-  CardPreview,
-  CardFooter
-} from '@fluentui/react-components/unstable';
+import { MenuItem, MenuList, Caption1, Tab, TabList, Input, Title3, Divider } from '@fluentui/react-components'
+import { Card } from '@fluentui/react-components/unstable';
 
 
 moment.locale('pt-br')
@@ -34,22 +29,42 @@ const loadingsDefault = {
 export default function App() {
 
   const [search, setSearch] = useState<string>('');
-  const [chats, setChats] = useState<IChat[]>();
+  const [chats, setChats] = useState<IChat[]>([]);
   const [me, setMe] = useState<IMe>();
   const [selectedChat, selectChat] = useState<IChat>();
   const [chatsNextLink, setChatsNextLink] = useState<string>("");
 
-  // useEffect(() => console.log(selectedChat), [selectedChat])
+  useEffect(() => {
+    getMe()
+      .catch(e => alert(e))
+      .then(meData => {
+        setMe(meData?.data);
+        updateAll();
+      })
+
+  }, [])
+
+  const updateAll = () => {
+    setChats([])
+
+    getChats()
+      .catch(e => alert(e))
+      .then(chatsData => {
+        setChatsNextLink(chatsData?.data['@odata.nextLink'] || '');
+        handleAddChats(chatsData?.data.value)
+      })
+
+  }
 
   const handleAddChats = (chats: IChat[]) => {
 
     const newChats = chats.map(chat => {
 
-      let topic: string = chat.topic;
+      let topic = chat.topic;
 
       const membersWithoutMe = chat.members.filter(member => member.userId !== me?.id)
 
-      if (chat.chatType === 'oneOnOne' && chat.members.length > 1) {
+      if (chat.chatType === 'oneOnOne' && chat.members.length) {
 
         topic = membersWithoutMe
           .map(member => member.displayName)
@@ -66,34 +81,15 @@ export default function App() {
 
     });
 
+    const aaa = newChats.map(chat => `${chat.id} | ${chat.topic}`).join('\n')
+    // console.log(aaa)
+
     setChats(prevChats => prevChats?.length ? [...prevChats, ...newChats] : newChats)
 
   }
 
-  const updateAll = () => {
-    setChats([])
-
-    getChats()
-      .catch(e => alert(e))
-      .then(chatsData => {
-        setChatsNextLink(chatsData?.data['@odata.nextLink'] || '');
-        handleAddChats(chatsData?.data.value)
-      })
-
-  }
-
-
   useEffect(() => {
-    getMe()
-      .catch(e => alert(e))
-      .then(meData => {
-        setMe(meData?.data);
-        updateAll();
-      })
-
-  }, [])
-
-  useEffect(() => {
+    console.log(selectedChat)
     if (selectedChat && !selectedChat?.messages) {
 
       getChatMessages(selectedChat.id)
@@ -101,8 +97,7 @@ export default function App() {
           selectChat((prev: any) =>
             ({ ...prev, messages: chatData.data.value, getNextMessages: chatData.data['@odata.nextLink'] })
           )
-        }
-        )
+        })
     }
 
   }, [selectedChat])
@@ -133,7 +128,7 @@ export default function App() {
         <p className={styles.chat_list_topic}>Chats</p>
 
         {/* SEARCH */}
-        <div className='ps-3 pt-2'>
+        <div className='ps-3 pt-2 w-100'>
           <Input
             appearance="filled-darker"
             placeholder='Pesquisar...'
@@ -142,11 +137,32 @@ export default function App() {
           />
         </div>
 
-        {/* LISTA DE CHATS */}
+
         <div className={styles.chat_list_items}>
+          <MenuList>
+            {(filteredChats || []).map(chat => (
+              <MenuItem
+                className={selectedChat?.id === chat.id ? styles.chat_selected : ''}
+                value={chat.id}
+                onClick={e => selectChat(chats?.filter(chatList => chatList.id === chat.id)[0])}
+              >
+                <span title={chat.topic}>
+                  {chat.chatType === 'group' ?
+                    <HiUserGroup className={styles.chat_list_items_item_icon} /> :
+                    <HiUser className={styles.chat_list_items_item_icon} />}
+                  {chat.topic}
+                </span>
+              </MenuItem>
+            ))}
+          </MenuList>
+        </div>
+
+        {/* LISTA DE CHATS */}
+        {/* <div className={styles.chat_list_items}>
           <TabList
+            onClick={e => console.log((e.target as any).value)}
             onTabSelect={e => {
-              console.log((e.target as any).value)
+              // console.log((e.target as any).value)
               selectChat(chats?.filter(chat => chat.id === (e.target as HTMLTextAreaElement).value)[0])
             }}
             defaultSelectedValue={selectedChat?.id}
@@ -173,8 +189,7 @@ export default function App() {
             )}
 
           </TabList>
-
-        </div>
+        </div> */}
 
       </div>
 
@@ -247,6 +262,85 @@ const ChatScreen = (pr: { selectedChat?: IChat, handleGetMoreMessages: () => any
           {membersWithoutMe.map((member: any) => member.displayName).join(', ')}
         </Caption1>
       }
+      <Divider />
+
+      {pr.selectedChat?.messages?.map(msg => {
+        const myMsg = msg.from?.user?.id === pr.me?.id;
+        const style: React.CSSProperties = { marginLeft: myMsg ? 'auto' : '' }
+
+        const now = DateTime.now();
+        const sentMsg = DateTime.fromISO(msg.createdDateTime);
+        const formatDate = sentMsg.hasSame(now, 'day') ?
+          'HH:mm'
+          : (sentMsg.hasSame(now, 'week') ? 'cccc HH:mm'
+            : (sentMsg.hasSame(now, 'year') ? 'dd LLL HH:mm'
+              : 'dd LLL yy HH:mm'))
+
+        const isSystemMessage = msg.messageType === "systemEventMessage";
+        const isUrgent = msg.importance === 'urgent';
+        const isImportant = msg.importance === 'high';
+
+        return (
+          <div className='w-75 message_container' style={style}>
+            <div
+              className={classNames(
+                'message',
+                { 'border-start border-danger': isImportant },
+                { 'border border-1 border-danger': isUrgent },
+                { 'myMessage justify-content-end': myMsg },
+                { 'notMyMessage justify-content-start': !myMsg && !isSystemMessage },
+                { 'systemMessage justify-content-start': !myMsg && isSystemMessage }
+              )}>
+              <div>
+                {
+                  isSystemMessage ?
+                    <>
+                      <span className='chat_sender'>
+                        {DateTime.fromISO(msg.createdDateTime).toFormat(formatDate)}
+                      </span>
+
+                      <div className="d-flex flex-row align-items-center">
+                        <div className='me-2'>
+                          {msg.eventDetail.callEventType === 'call' ?
+                            <BiPhoneCall className='icon' />
+                            : (msg.eventDetail['@odata.type'] === "#microsoft.graph.membersAddedEventMessageDetail" ?
+                              <AiOutlineUserAdd className='icon' />
+                              : <BiQuestionMark className='icon' />)}
+                        </div>
+                        <div className='d-flex flex-column chat_sender'>
+                          <span className='pb-1'>
+                            {(msg?.eventDetail?.callParticipants || [])
+                              .map((part: any) => part.participant?.user?.displayName)
+                              .join(', ')
+                            }
+                          </span>
+                          <span>
+                            {msg.eventDetail.callDuration && moment.duration(msg.eventDetail.callDuration).humanize()}
+                          </span>
+                        </div>
+                      </div>
+                    </> :
+                    <>
+                      <span className='chat_sender'>
+                        {!myMsg && <>{msg.from?.user?.displayName} • </>}
+                        {DateTime.fromISO(msg.createdDateTime).toFormat(formatDate)}
+                        {isUrgent && <> • <FaBell className='icon text-danger' /></>}
+                        {isImportant && <> • <BsExclamationLg className='icon text-danger' /></>}
+
+                        <div className="d-block">
+                          {msg.reactions?.map(reaction => <Reaction key={reaction.user.user.id} reactionType={reaction.reactionType} />)}
+                        </div>
+
+                      </span>
+                      <div className='pt-1' dangerouslySetInnerHTML={{ __html: msg.body.content }} />
+                    </>
+                }
+              </div>
+            </div>
+          </div>
+        )
+      }
+      )}
 
     </Card>
   ) : null
