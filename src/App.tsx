@@ -15,6 +15,9 @@ import moment from 'moment'
 import 'moment/locale/pt-br'
 import { MenuItem, MenuList, Caption1, Tab, TabList, Input, Title3, Divider } from '@fluentui/react-components'
 import { Card } from '@fluentui/react-components/unstable';
+import Login from './pages/Login';
+import ChatApp from './pages/ChatApp';
+import { GetChats } from './services/requestsBrowser';
 
 
 moment.locale('pt-br')
@@ -25,8 +28,34 @@ const loadingsDefault = {
   gettingMessages: false
 
 }
-
 export default function App() {
+  const [me, setMe] = useState<IMe>();
+  const [token, setToken] = useState<string>('');
+
+  const handleLogin = () => {
+    GetChats(token)
+      .then(resp => {
+        const chats = resp.data.value;
+      })
+
+  }
+
+  const handleLogout = () => setMe(undefined);
+
+  return (
+    <Card className={styles.container}>
+      {!me ? <Login
+        token={token}
+        setToken={setToken} /> :
+        <ChatApp
+          token={token}
+          handleLogout={handleLogout}
+          me={me} />}
+    </Card>
+  )
+}
+
+export function App1() {
 
   const [search, setSearch] = useState<string>('');
   const [chats, setChats] = useState<IChat[]>([]);
@@ -81,15 +110,14 @@ export default function App() {
 
     });
 
-    const aaa = newChats.map(chat => `${chat.id} | ${chat.topic}`).join('\n')
-    // console.log(aaa)
+    // const aaa = newChats.map(chat => `${chat.id} | ${chat.topic}`).join('\n')
 
     setChats(prevChats => prevChats?.length ? [...prevChats, ...newChats] : newChats)
 
   }
 
   useEffect(() => {
-    console.log(selectedChat)
+    // console.log(selectedChat)
     if (selectedChat && !selectedChat?.messages) {
 
       getChatMessages(selectedChat.id)
@@ -143,6 +171,7 @@ export default function App() {
             {(filteredChats || []).map(chat => (
               <MenuItem
                 className={selectedChat?.id === chat.id ? styles.chat_selected : ''}
+                key={chat.id}
                 value={chat.id}
                 onClick={e => selectChat(chats?.filter(chatList => chatList.id === chat.id)[0])}
               >
@@ -226,7 +255,7 @@ const ChatScreen = (pr: { selectedChat?: IChat, handleGetMoreMessages: () => any
       angry: { title: 'Brabei', emoji: '😡' },
     }
 
-    return <span className='chat_reactions' title={chatReactions[pr.reactionType].title}>{chatReactions[pr.reactionType].emoji}</span>
+    return <span className='chat_reactions' title={chatReactions[pr.reactionType]?.title}>{chatReactions[pr.reactionType]?.emoji}</span>
   }
 
   const MyUserMessage = () => {
@@ -281,7 +310,7 @@ const ChatScreen = (pr: { selectedChat?: IChat, handleGetMoreMessages: () => any
         const isImportant = msg.importance === 'high';
 
         return (
-          <div className='w-75 message_container' style={style}>
+          <div className='w-75 message_container' style={style} key={msg.id}>
             <div
               className={classNames(
                 'message',
@@ -467,6 +496,7 @@ const Chats = (pr: ChatsProps) => {
     <MenuList>
       {pr.contacts.map(chat => (
         <MenuItem
+          key={chat.id}
           onClick={() => pr.selectChat(chat)}
           title={chat.topic}
         >
