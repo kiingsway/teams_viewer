@@ -1,12 +1,11 @@
 import React, { Dispatch, SetStateAction } from 'react'
 import Input from '../../components/Input';
-import { IHandleAlerts } from '../../interfaces';
 
 interface Props {
   token: string;
   loading: boolean;
   handleLogin: () => void;
-  handleAlerts: IHandleAlerts;
+  handleAlerts: (msg: any, type?: 'default' | 'info' | 'success' | 'warning' | 'error', timeMs?: number) => void;
   setToken: Dispatch<SetStateAction<string>>;
 }
 
