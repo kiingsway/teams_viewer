@@ -21,8 +21,6 @@ export default function ChatMessages({ selectedChat, meId, token, handleAlerts, 
 
   const msgsNotDeleted = selectedChat?.messages.filter(msg => !msg.deletedDateTime);
 
-  console.log(selectedChat);
-
   const groupChatMembers = selectedChat.chat.members.map(member => member.displayName).join(', ');
 
   const MyMessage = ({ msg }: { msg: IMessage }) => {
@@ -115,7 +113,7 @@ export default function ChatMessages({ selectedChat, meId, token, handleAlerts, 
           console.groupEnd();
 
           return (
-            <div className='d-flex flex-row'>
+            <div className='d-flex flex-row' key={msg.id}>
               <div className={styles.system_message}>
                 Não foi possível renderizar esta mensagem, cheque o console para mais detalhes...
               </div>

@@ -6,7 +6,7 @@ import emojis from '../../../../components/emojis.json';
 import classNames from "classnames";
 import styles from '../../TeamsAppPage.module.css';
 import Input from "../../../../components/Input";
-
+import { v4 as uuid } from 'uuid';
 
 interface Props {
   msg: IMessage;
@@ -30,11 +30,6 @@ export default function ModalReaction({ msg, chatId, token, handleAlerts, handle
       .catch(e => { handleAlerts(e, 'error') })
       .finally(handleClose);
   };
-
-  useEffect(() => {
-    if (!opened) return;
-    console.log(msg);
-  }, [opened]);
 
   const emojisFiltered = search ? emojis.filter(e => {
     const cat = e.categoria.toLowerCase();
@@ -65,7 +60,7 @@ export default function ModalReaction({ msg, chatId, token, handleAlerts, handle
             <div className='d-flex flex-row align-items-center pb-3 emoji-container'>
               {msg.reactions.map(r => {
                 const rEmoji = emojis.filter(e => e.id === r.reactionType)[0]?.unicode || r.reactionType || '?';
-                return <span className={styles.reaction_type}>{rEmoji}</span>;
+                return <span key={uuid()} className={styles.reaction_type}>{rEmoji}</span>;
               })}
             </div>
 

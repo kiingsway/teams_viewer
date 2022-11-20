@@ -63,7 +63,6 @@ export default function TeamsAppPage({ me, token, handleLogout, handleAlerts }: 
     setLoading(p => ({ ...p, moreChats: true }));
     GetViaUrl(chats.nextLink, token)
       .then(chatsData => {
-        console.log(chatsData.data);
         const newChats: IChat[] = chatsData.data.value;
         const allChats = chats && chats?.items?.length ? [...chats.items, ...newChats] : newChats;
         setChats({
@@ -94,8 +93,7 @@ export default function TeamsAppPage({ me, token, handleLogout, handleAlerts }: 
             ...prev,
             messages: newMessages,
           }
-        })
-        console.log(newMessage);
+        });
       })
       .catch(e => handleAlerts(e, 'error'))
 
