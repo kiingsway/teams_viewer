@@ -1,7 +1,7 @@
 import classNames from 'classnames';
-import React, { useEffect, useState } from 'react'
-import { IChat, IChatMessages, IChatsState, ILoadingTeamsApp, IMe, IMessage, IToken, THandleAlerts } from '../../interfaces';
-import { GetChatMessage, GetChatMessages, GetChats, GetViaUrl } from '../../services/graphRequests';
+import React, { useState } from 'react'
+import { IChat, IChatMessages, IMe, IToken, THandleAlerts } from '../../interfaces';
+import { GetChatMessages } from '../../services/graphRequests';
 import ChatList from './ChatList';
 import ChatMessages from './ChatMessages';
 import Header from './Header';
@@ -16,82 +16,23 @@ interface Props {
 
 export default function TeamsAppPage({ me, token, handleLogout, handleAlerts }: Props) {
 
-  const [chats, setChats] = useState<IChatsState>({ nextLink: '', items: undefined });
-  const [loading, setLoading] = useState<ILoadingTeamsApp>({ chats: false, moreChats: false, chatMessages: false });
+  const [loading, setLoading] = useState(false);
   const [selectedChat, selectChat] = useState<IChatMessages>();
 
-  const handleGetChats = () => {
-    setLoading(p => ({ ...p, chats: true }));
-    GetChats(token)
-      .then(chatsData => {
-        const newChats: IChat[] = chatsData.data.value;
-        setChats({
-          items: handleAddChats(newChats, me),
-          nextLink: chatsData?.data?.["@odata.nextLink"] || ''
-        });
-      })
-      .catch(e => { handleAlerts(e, 'error') })
-      .finally(() => {
-        setLoading(p => ({ ...p, chats: false }));
-      })
-  }
-
-  const handleSelectChat = (chatId: string) => {
-    setLoading(p => ({ ...p, chatMessages: true }));
-    GetChatMessages(chatId, token)
+  function handleChangeChat(chat: IChat) {
+    setLoading(true);
+    GetChatMessages(chat.id, token)
       .then(chatMessagesData => {
         const cm = chatMessagesData.data;
         selectChat({
-          chat: chats.items?.filter(c => c.id === chatId)[0] as IChat,
+          chat: chat,
           messages: cm.value.sort(sortByTime),
           nextLink: cm["@odata.nextLink"],
         });
       })
-      .catch(e => { handleAlerts(e, 'error') })
-      .finally(() => setLoading(p => ({ ...p, chatMessages: false })))
+      .catch(e =>  handleAlerts(e, 'error') )
+      .finally(() => setLoading(false))
   }
-
-  const handleGetMoreChats = () => {
-    setLoading(p => ({ ...p, moreChats: true }));
-    GetViaUrl(chats.nextLink, token)
-      .then(chatsData => {
-        const newChats: IChat[] = chatsData.data.value;
-        const allChats = chats && chats?.items?.length ? [...chats.items, ...newChats] : newChats;
-        setChats({
-          items: handleAddChats(allChats, me),
-          nextLink: chatsData?.data?.["@odata.nextLink"] || ''
-        });
-      })
-      .catch(e => { handleAlerts(e, 'error') })
-      .finally(() => {
-        setLoading(p => ({ ...p, moreChats: false }));
-      })
-
-  }
-
-  const handleUpdateMessage = (chatId: string, msgId: string) => {
-
-    GetChatMessage(chatId, msgId, token)
-      .then(resp => {
-        const newMessage: IMessage = resp.data;
-        selectChat(prev => {
-          if (!prev) return prev;
-          const indexMsg = prev.messages.findIndex(msg => msg.id === msgId)
-          if (!indexMsg && indexMsg !== 0) return prev;
-          let newMessages = prev.messages;
-          newMessages[indexMsg].reactions = newMessage.reactions;
-
-          return {
-            ...prev,
-            messages: newMessages,
-          }
-        });
-      })
-      .catch(e => handleAlerts(e, 'error'))
-
-  }
-
-  useEffect(handleGetChats, []);
 
   return (
     <div className='container-fluid'>
@@ -100,26 +41,24 @@ export default function TeamsAppPage({ me, token, handleLogout, handleAlerts }: 
       <div className={classNames(['row', styles.row_chat])}>
         <div className={`col-3 p-2 ${styles.chat_list_screen} ${styles.blue_scroll}`}>
           <ChatList
-            handleGetMoreChats={handleGetMoreChats}
-            loading={loading}
-            handleGetChats={handleGetChats}
-            handleSelectChat={handleSelectChat}
-            selectChat={selectChat}
+            me={me}
+            token={token}
+            loadingMessages={loading}
             selectedChat={selectedChat}
-            chats={chats} />
+            handleAlerts={handleAlerts}
+            handleChangeChat={handleChangeChat}
+          />
         </div>
         <div className={`col-9 ${styles.chat_row_messages} ${styles.blue_scroll}`}>
-          {selectedChat && !loading.chatMessages ?
+          {selectedChat && !loading ?
             <ChatMessages
               selectedChat={selectedChat}
               meId={me.id}
               token={token}
-              loading={loading}
-              handleUpdateMessage={handleUpdateMessage}
-              handleAlerts={handleAlerts} /> : null
-          }
-          {loading.chatMessages ? <div className='p-4 m-4 text-muted'>Carregando mensagens...</div> : null}
-          {!selectedChat && !loading.chatMessages ? <div className='p-4 m-4 text-muted'>Selecione um chat ao lado para mostrar as mensagens...</div> : null}
+              selectChat={selectChat}
+              handleAlerts={handleAlerts} /> : null}
+          {loading ? <div className='p-4 m-4 text-muted'>Carregando mensagens...</div> : null}
+          {!selectedChat && !loading ? <div className='p-4 m-4 text-muted'>Selecione um chat ao lado para mostrar as mensagens...</div> : null}
 
         </div>
       </div>
@@ -150,42 +89,6 @@ function GetJwt(token: string): IToken['jwt'] | null {
 
     } catch (e) { return null; }
   } else return null;
-}
-
-const handleAddChats = (chats: IChat[], me: IMe) => {
-
-  const newChats = chats.map(chat => {
-
-    let topic: string = chat.topic || '';
-
-    const membersWithoutMe = chat.members.filter(member => member.userId !== me?.id)
-
-    if (chat.chatType === 'oneOnOne' && chat.members.length > 1) {
-
-      topic = membersWithoutMe
-        .map(member => member.displayName)
-        .join(', ')
-
-    } else if (chat.chatType === 'group' && !chat.topic) {
-
-      topic = membersWithoutMe
-        .map(member => member.displayName.split(' ')[0])
-        .join(', ')
-    }
-
-    if (!topic) {
-      console.groupCollapsed('Não consegui obter o tópico desse:')
-      console.log(chat);
-      console.groupEnd();
-    }
-
-    return { ...chat, topic }
-
-  });
-
-  const allChats = [...chats, ...newChats];
-  return Array.from(new Map(allChats.map(item => [item['id'], item])).values())
-
 }
 
 export function sortByTime(a: any, b: any) {

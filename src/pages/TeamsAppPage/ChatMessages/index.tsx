@@ -2,53 +2,71 @@ import classNames from 'classnames';
 import { DateTime, Duration } from 'luxon';
 import React, { useState } from 'react'
 import { FriendlyDate } from '../../../../pages';
-import { IChatMessages, ILoadingTeamsApp, IMessage, IReaction, IToken } from '../../../interfaces';
+import { IChatMessages, IMessage, IReaction, THandleAlerts } from '../../../interfaces';
 import styles from '../TeamsAppPage.module.css'
 import ModalReaction from './ModalReaction';
 import { FcPhone, FcEndCall, FcClock, FcEnteringHeavenAlive, FcCamcorder, FcVideoFile, FcVideoCall, FcSignature } from 'react-icons/fc';
 import emojis from '../../../components/emojis.json';
-import { Button } from 'react-bootstrap';
-import { GetViaUrl } from '../../../services/graphRequests';
+import { GetChatMessage, GetViaUrl } from '../../../services/graphRequests';
 import { sortByTime } from '..';
+import { Button } from 'react-bootstrap';
 
 interface Props {
   selectedChat?: IChatMessages;
   meId: string;
   token: string;
-  loading: ILoadingTeamsApp;
-  handleAlerts: (msg: any, type?: "default" | "info" | "success" | "warning" | "error" | undefined, timeMs?: number | undefined) => void;
-  handleUpdateMessage: (chatId: string, msgId: string) => void;
+  handleAlerts: THandleAlerts;
+  selectChat: React.Dispatch<React.SetStateAction<IChatMessages | undefined>>;
 }
 
-export default function ChatMessages({ selectedChat, meId, token, handleAlerts, handleUpdateMessage, loading }: Props) {
+export default function ChatMessages({ selectedChat, meId, token, handleAlerts, selectChat }: Props) {
 
   const [loadingMsg, setLoadingMsg] = useState(false);
-  const [nextLink, setNextLink] = useState(selectedChat?.nextLink);
-  const [messages, setMessages] = useState(selectedChat?.messages || [])
-
-  console.log(messages)
+  const [chatMessages, setChatMessages] = useState({ items: selectedChat?.messages || [], nextLink: selectedChat?.nextLink })
 
   if (!selectedChat) return <ChatNotSelected />
-  if (!messages || !messages.length) return <NoMessages />
+  if (!chatMessages || !chatMessages.items.length) return <NoMessages />
 
   const groupChatMembers = selectedChat.chat.members.map(member => member.displayName).join(', ');
 
   function handleGetMoreMessages() {
-    if (!nextLink) return;
+    if (!chatMessages.nextLink) return;
     setLoadingMsg(true);
-    GetViaUrl(nextLink, token)
-      .then(chatMessagesData => {
-        
-        setMessages(prev => {
-
-          const cm = chatMessagesData.data.value.sort(sortByTime);
-          return [...cm, ...prev];
-
-        });
-
-      })
+    GetViaUrl(chatMessages.nextLink, token)
+      .then(chatMessagesData =>
+        setChatMessages(prev => {
+          const cm = chatMessagesData.data;
+          return {
+            items: [...prev.items, ...cm.value.sort(sortByTime)],
+            nextLink: cm?.['@odata.nextLink'] || undefined
+          }
+        }
+        )
+      )
       .catch(e => handleAlerts(e, 'error'))
       .finally(() => setLoadingMsg(false))
+  }
+
+  const handleUpdateMessage = (chatId: string, msgId: string) => {
+
+    GetChatMessage(chatId, msgId, token)
+      .then(resp => {
+        const newMessage: IMessage = resp.data;
+        selectChat(prev => {
+          if (!prev) return prev;
+          const indexMsg = prev.messages.findIndex(msg => msg.id === msgId)
+          if (!indexMsg && indexMsg !== 0) return prev;
+          let newMessages = prev.messages;
+          newMessages[indexMsg].reactions = newMessage.reactions;
+
+          return {
+            ...prev,
+            messages: newMessages,
+          }
+        });
+      })
+      .catch(e => handleAlerts(e, 'error'))
+
   }
 
   const MyMessage = ({ msg }: { msg: IMessage }) => {
@@ -122,7 +140,7 @@ export default function ChatMessages({ selectedChat, meId, token, handleAlerts, 
     )
   }
 
-  const msgsNotDeleted = messages.filter(msg => !msg.deletedDateTime);
+  const msgsNotDeleted = chatMessages.items.filter(msg => !msg.deletedDateTime);
 
   return (
     <>
@@ -153,9 +171,14 @@ export default function ChatMessages({ selectedChat, meId, token, handleAlerts, 
           )
         })}
 
-        {/* <Button className={styles.btn_get_more_messages} onClick={handleGetMoreMessages}>
-          Obter mais mensagens...
-        </Button> */}
+        {chatMessages.nextLink ?
+          <Button
+            disabled={loadingMsg}
+            className={styles.btn_get_more_messages}
+            onClick={handleGetMoreMessages}>
+            Obter mais mensagens...
+          </Button> : null
+        }
       </div >
     </>
   )
