@@ -1,20 +1,13 @@
-import Input from '../src/components/Input';
 import Head from 'next/head'
 import styles from '../styles/Home.module.css'
-import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
-import { GetChatMessages, GetChats, GetMyInfo, GetViaUrl, ReactMessage } from '../src/services/graphRequests';
-import { IChat, IChatMessages, IConversations, ILoadingTeamsApp, IMe, IMessage, IReaction } from '../src/interfaces';
+import { useState } from 'react';
+import { GetMyInfo } from '../src/services/graphRequests';
+import { IChat, IMe } from '../src/interfaces';
 import { DateTime } from 'luxon';
-import { HiOutlineLogout } from 'react-icons/hi'
-import { TbRefresh } from 'react-icons/tb'
-import Button from 'react-bootstrap/Button';
-import Modal from 'react-bootstrap/Modal';
-import emojis from '../src/components/emojis.json'
 import { toast, ToastContainer, ToastOptions } from 'react-toastify';
 import LoginPage from '../src/pages/LoginPage';
-import 'react-toastify/dist/ReactToastify.css';
 import TeamsAppPage from '../src/pages/TeamsAppPage';
-import { v4 as uuid } from 'uuid';
+import 'react-toastify/dist/ReactToastify.css';
 
 export default function Home() {
 
@@ -84,61 +77,25 @@ export default function Home() {
       />
 
       <main className={styles.main}>
+
         {!me ?
           <LoginPage
             token={token}
             loading={loading}
             handleLogin={handleLogin}
             handleAlerts={handleAlerts}
-            setToken={setToken}
-            />
-            :
-            <TeamsAppPage
+            setToken={setToken} />
+          :
+          <TeamsAppPage
             handleLogout={handleLogout}
             handleAlerts={handleAlerts}
             token={token}
-            me={me} />
-        }
+            me={me} />}
+
       </main>
 
     </div>
   )
-
-}
-
-const handleAddChats = (chats: IChat[], me: IMe) => {
-
-  const newChats = chats.map(chat => {
-
-    let topic: string = chat.topic || '';
-
-    const membersWithoutMe = chat.members.filter(member => member.userId !== me?.id)
-
-    if (chat.chatType === 'oneOnOne' && chat.members.length > 1) {
-
-      topic = membersWithoutMe
-        .map(member => member.displayName)
-        .join(', ')
-
-    } else if (chat.chatType === 'group' && !chat.topic) {
-
-      topic = membersWithoutMe
-        .map(member => member.displayName.split(' ')[0])
-        .join(', ')
-    }
-
-    if (!topic) {
-      console.groupCollapsed('Não consegui obter o tópico desse:')
-      console.log(chat);
-      console.groupEnd();
-    }
-
-    return { ...chat, topic }
-
-  });
-
-  const allChats = [...chats, ...newChats];
-  return Array.from(new Map(allChats.map(item => [item['id'], item])).values())
 
 }
 

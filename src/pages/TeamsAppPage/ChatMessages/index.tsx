@@ -1,42 +1,72 @@
 import classNames from 'classnames';
 import { DateTime, Duration } from 'luxon';
-import React from 'react'
+import React, { useState } from 'react'
 import { FriendlyDate } from '../../../../pages';
-import { IChatMessages, IMessage, IToken } from '../../../interfaces';
+import { IChatMessages, ILoadingTeamsApp, IMessage, IReaction, IToken } from '../../../interfaces';
 import styles from '../TeamsAppPage.module.css'
 import ModalReaction from './ModalReaction';
 import { FcPhone, FcEndCall, FcClock, FcEnteringHeavenAlive, FcCamcorder, FcVideoFile, FcVideoCall, FcSignature } from 'react-icons/fc';
+import emojis from '../../../components/emojis.json';
+import { Button } from 'react-bootstrap';
+import { GetViaUrl } from '../../../services/graphRequests';
+import { sortByTime } from '..';
 
 interface Props {
   selectedChat?: IChatMessages;
   meId: string;
   token: string;
+  loading: ILoadingTeamsApp;
   handleAlerts: (msg: any, type?: "default" | "info" | "success" | "warning" | "error" | undefined, timeMs?: number | undefined) => void;
   handleUpdateMessage: (chatId: string, msgId: string) => void;
 }
 
-export default function ChatMessages({ selectedChat, meId, token, handleAlerts, handleUpdateMessage }: Props) {
+export default function ChatMessages({ selectedChat, meId, token, handleAlerts, handleUpdateMessage, loading }: Props) {
+
+  const [loadingMsg, setLoadingMsg] = useState(false);
+  const [nextLink, setNextLink] = useState(selectedChat?.nextLink);
+  const [messages, setMessages] = useState(selectedChat?.messages || [])
+
+  console.log(messages)
 
   if (!selectedChat) return <ChatNotSelected />
-
-  const msgsNotDeleted = selectedChat?.messages.filter(msg => !msg.deletedDateTime);
+  if (!messages || !messages.length) return <NoMessages />
 
   const groupChatMembers = selectedChat.chat.members.map(member => member.displayName).join(', ');
 
+  function handleGetMoreMessages() {
+    if (!nextLink) return;
+    setLoadingMsg(true);
+    GetViaUrl(nextLink, token)
+      .then(chatMessagesData => {
+        
+        setMessages(prev => {
+
+          const cm = chatMessagesData.data.value.sort(sortByTime);
+          return [...cm, ...prev];
+
+        });
+
+      })
+      .catch(e => handleAlerts(e, 'error'))
+      .finally(() => setLoadingMsg(false))
+  }
+
   const MyMessage = ({ msg }: { msg: IMessage }) => {
+
     return (
       <div className='d-flex flex-row'>
         <div className='w-25' />
         <div className={classNames(['w-75', styles.chat_message_item, styles.my_message])}>
-          <span className={styles.msg_from}>
-            <FriendlyDate date={DateTime.fromISO(msg.createdDateTime)} />
+          <div className={styles.msg_from}>
+            <EmojisOnMessage reactions={msg.reactions} />
             <ModalReaction
               handleUpdateMessage={handleUpdateMessage}
               chatId={selectedChat.chat.id}
               msg={msg}
               token={token}
               handleAlerts={handleAlerts} />
-          </span>
+            <FriendlyDate date={DateTime.fromISO(msg.createdDateTime)} />
+          </div>
           <Message bodyContent={msg.body.content} />
         </div>
       </div>
@@ -47,8 +77,8 @@ export default function ChatMessages({ selectedChat, meId, token, handleAlerts, 
     return (
       <div className='d-flex flex-row'>
         <div className={classNames(['w-75', styles.chat_message_item, styles.others_message])}>
-          <span className={styles.msg_from}>
-            {selectedChat.chat.chatType === 'group' ? <>{msg.from.user.displayName}</> : null}
+          <div className={styles.msg_from}>
+            <span className={styles.chat_user}>{selectedChat.chat.chatType === 'group' ? <>{msg.from.user.displayName}</> : null}</span>
             <FriendlyDate date={DateTime.fromISO(msg.createdDateTime)} />
             <ModalReaction
               handleUpdateMessage={handleUpdateMessage}
@@ -56,7 +86,8 @@ export default function ChatMessages({ selectedChat, meId, token, handleAlerts, 
               msg={msg}
               token={token}
               handleAlerts={handleAlerts} />
-          </span>
+            <EmojisOnMessage reactions={msg.reactions} />
+          </div>
           <Message bodyContent={msg.body.content} />
         </div>
         <div className='w-25' />
@@ -91,6 +122,8 @@ export default function ChatMessages({ selectedChat, meId, token, handleAlerts, 
     )
   }
 
+  const msgsNotDeleted = messages.filter(msg => !msg.deletedDateTime);
+
   return (
     <>
       <div className={styles.chat_topic}>
@@ -99,7 +132,6 @@ export default function ChatMessages({ selectedChat, meId, token, handleAlerts, 
       </div>
 
       <div className={classNames([styles.chat_messages, styles.blue_scroll])}>
-
 
         {msgsNotDeleted?.map(msg => {
           const msgFrom: 'mine' | 'others' | 'system' = msg.messageType === "systemEventMessage" ? 'system' : (msg.from?.user?.id === meId ? 'mine' : 'others');
@@ -120,9 +152,35 @@ export default function ChatMessages({ selectedChat, meId, token, handleAlerts, 
             </div>
           )
         })}
+
+        {/* <Button className={styles.btn_get_more_messages} onClick={handleGetMoreMessages}>
+          Obter mais mensagens...
+        </Button> */}
       </div >
     </>
   )
+}
+
+const EmojisOnMessage = ({ reactions }: { reactions: IReaction[] }) => {
+
+
+  const EmojiReaction = ({ r }: { r: IReaction }) => {
+
+    const emojiReaction = emojis.filter(e => e.id === r.reactionType)[0]?.unicode || r.reactionType || '?'
+
+    return (
+      <span key={`${r.reactionType}${r.user.user.id}`}>
+        {emojiReaction}
+      </span>
+    )
+  }
+
+  return (
+    <div>
+      {reactions.map(r => <EmojiReaction key={`${r.reactionType}${r.user.user.id}`} r={r} />)}
+    </div>
+  )
+
 }
 
 const Message = ({ bodyContent }: { bodyContent: string }) => {
@@ -137,6 +195,12 @@ const Message = ({ bodyContent }: { bodyContent: string }) => {
 const ChatNotSelected = () => (
   <div className='w-100 h-100 d-flex align-items-center justify-content-center'>
     <span className='text-muted'>Selecione uma conversa ao lado...</span>
+  </div>
+)
+
+const NoMessages = () => (
+  <div className='w-100 h-100 d-flex align-items-center justify-content-center'>
+    <span className='text-muted'>Não há nenhuma mensagem nessa conversa</span>
   </div>
 )
 

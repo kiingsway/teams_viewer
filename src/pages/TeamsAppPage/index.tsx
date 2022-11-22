@@ -1,6 +1,6 @@
 import classNames from 'classnames';
 import React, { useEffect, useState } from 'react'
-import { IChat, IChatMessages, IChatsState, ILoadingTeamsApp, IMe, IMessage, IToken } from '../../interfaces';
+import { IChat, IChatMessages, IChatsState, ILoadingTeamsApp, IMe, IMessage, IToken, THandleAlerts } from '../../interfaces';
 import { GetChatMessage, GetChatMessages, GetChats, GetViaUrl } from '../../services/graphRequests';
 import ChatList from './ChatList';
 import ChatMessages from './ChatMessages';
@@ -11,7 +11,7 @@ interface Props {
   me: IMe;
   token: string;
   handleLogout: () => void;
-  handleAlerts: (msg: any, type?: 'default' | 'info' | 'success' | 'warning' | 'error', timeMs?: number) => void;
+  handleAlerts: THandleAlerts;
 }
 
 export default function TeamsAppPage({ me, token, handleLogout, handleAlerts }: Props) {
@@ -36,27 +36,19 @@ export default function TeamsAppPage({ me, token, handleLogout, handleAlerts }: 
       })
   }
 
-  const handleSelectChat = (id: string) => {
+  const handleSelectChat = (chatId: string) => {
     setLoading(p => ({ ...p, chatMessages: true }));
-    GetChatMessages(id, token)
+    GetChatMessages(chatId, token)
       .then(chatMessagesData => {
         const cm = chatMessagesData.data;
-        function sortByTime(a: any, b: any) {
-          if (a.createdDateTime < b.createdDateTime) return 1;
-          if (a.createdDateTime > b.createdDateTime) return -1;
-          return 0;
-        }
         selectChat({
-          chat: chats.items?.filter(c => c.id === id)[0] as IChat,
+          chat: chats.items?.filter(c => c.id === chatId)[0] as IChat,
           messages: cm.value.sort(sortByTime),
           nextLink: cm["@odata.nextLink"],
         });
       })
       .catch(e => { handleAlerts(e, 'error') })
-      .finally(() => {
-        setLoading(p => ({ ...p, chatMessages: false }))
-      })
-
+      .finally(() => setLoading(p => ({ ...p, chatMessages: false })))
   }
 
   const handleGetMoreChats = () => {
@@ -83,9 +75,9 @@ export default function TeamsAppPage({ me, token, handleLogout, handleAlerts }: 
       .then(resp => {
         const newMessage: IMessage = resp.data;
         selectChat(prev => {
-          if(!prev) return prev;
+          if (!prev) return prev;
           const indexMsg = prev.messages.findIndex(msg => msg.id === msgId)
-          if(!indexMsg && indexMsg !== 0) return prev;
+          if (!indexMsg && indexMsg !== 0) return prev;
           let newMessages = prev.messages;
           newMessages[indexMsg].reactions = newMessage.reactions;
 
@@ -112,16 +104,23 @@ export default function TeamsAppPage({ me, token, handleLogout, handleAlerts }: 
             loading={loading}
             handleGetChats={handleGetChats}
             handleSelectChat={handleSelectChat}
+            selectChat={selectChat}
             selectedChat={selectedChat}
             chats={chats} />
         </div>
         <div className={`col-9 ${styles.chat_row_messages} ${styles.blue_scroll}`}>
-          <ChatMessages
-            selectedChat={selectedChat}
-            meId={me.id}
-            token={token}
-            handleUpdateMessage={handleUpdateMessage}
-            handleAlerts={handleAlerts} />
+          {selectedChat && !loading.chatMessages ?
+            <ChatMessages
+              selectedChat={selectedChat}
+              meId={me.id}
+              token={token}
+              loading={loading}
+              handleUpdateMessage={handleUpdateMessage}
+              handleAlerts={handleAlerts} /> : null
+          }
+          {loading.chatMessages ? <div className='p-4 m-4 text-muted'>Carregando mensagens...</div> : null}
+          {!selectedChat && !loading.chatMessages ? <div className='p-4 m-4 text-muted'>Selecione um chat ao lado para mostrar as mensagens...</div> : null}
+
         </div>
       </div>
     </div>
@@ -187,4 +186,10 @@ const handleAddChats = (chats: IChat[], me: IMe) => {
   const allChats = [...chats, ...newChats];
   return Array.from(new Map(allChats.map(item => [item['id'], item])).values())
 
+}
+
+export function sortByTime(a: any, b: any) {
+  if (a.createdDateTime < b.createdDateTime) return 1;
+  if (a.createdDateTime > b.createdDateTime) return -1;
+  return 0;
 }

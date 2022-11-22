@@ -1,3 +1,5 @@
+type THandleAlerts = (msg: any, type?: 'default' | 'info' | 'success' | 'warning' | 'error', timeMs?: number) => void;
+
 export interface IMe {
   "@odata.context": string
   businessPhones: any[];

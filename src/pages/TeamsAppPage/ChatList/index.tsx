@@ -11,6 +11,7 @@ interface Props {
   handleSelectChat: (id: string) => void;
   selectedChat?: IChatMessages;
   handleGetMoreChats: () => void;
+  selectChat: React.Dispatch<React.SetStateAction<IChatMessages | undefined>>;
 }
 
 export default function ChatList({ loading, handleGetChats, chats, handleSelectChat, selectedChat, handleGetMoreChats }: Props) {
@@ -38,6 +39,7 @@ export default function ChatList({ loading, handleGetChats, chats, handleSelectC
           value={search}
           onChange={e => setSearch(e.target.value)}
           labelText='Pesquisar chat'
+          type='search'
         />
       </div>
       <div className="mt-2 d-flex flex-column chats">

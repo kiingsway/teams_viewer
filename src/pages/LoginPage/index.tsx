@@ -1,4 +1,5 @@
-import React, { Dispatch, SetStateAction } from 'react'
+import React, { Dispatch, SetStateAction, useState } from 'react'
+import { Button, Modal } from 'react-bootstrap';
 import Input from '../../components/Input';
 
 interface Props {
@@ -20,7 +21,7 @@ export default function LoginPage({ token, setToken, handleLogin, loading }: Pro
         onChange={e => setToken(e.target.value)}
         labelText='Insira o token de acesso'
       />
-
+      
       <span className='mb-4'>
         Obtenha o token de acesso no site do <a target="__blank" href="https://developer.microsoft.com/pt-br/graph/graph-explorer">Graph Explorer</a>.
       </span>
