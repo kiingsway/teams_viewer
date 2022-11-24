@@ -92,11 +92,12 @@ export default function ChatMessages({ selectedChat, meId, token, handleAlerts, 
   }
 
   const OthersMessage = ({ msg }: { msg: IMessage }) => {
-    return (
+
+    if (msg.from?.application?.displayName === 'Forms') return (
       <div className='d-flex flex-row'>
         <div className={classNames(['w-75', styles.chat_message_item, styles.others_message])}>
           <div className={styles.msg_from}>
-            <span className={styles.chat_user}>{selectedChat.chat.chatType === 'group' ? <>{msg.from.user.displayName}</> : null}</span>
+            <span className={styles.chat_user}>{msg.summary}</span>
             <FriendlyDate date={DateTime.fromISO(msg.createdDateTime)} />
             <ModalReaction
               handleUpdateMessage={handleUpdateMessage}
@@ -109,6 +110,39 @@ export default function ChatMessages({ selectedChat, meId, token, handleAlerts, 
           <Message bodyContent={msg.body.content} />
         </div>
         <div className='w-25' />
+      </div>
+    )
+
+    if (msg.from?.user?.displayName) return (
+      <div className='d-flex flex-row'>
+        <div className={classNames(['w-75', styles.chat_message_item, styles.others_message])}>
+          <div className={styles.msg_from}>
+              <span>{selectedChat.chat.chatType === 'group' ? <>{msg.from.user.displayName}</> : null}</span>
+              <FriendlyDate date={DateTime.fromISO(msg.createdDateTime)} />
+              <ModalReaction
+                handleUpdateMessage={handleUpdateMessage}
+                chatId={selectedChat.chat.id}
+                msg={msg}
+                token={token}
+                handleAlerts={handleAlerts} />
+            <EmojisOnMessage reactions={msg.reactions} />
+          </div>
+          <Message bodyContent={msg.body.content} />
+        </div>
+        <div className='w-25' />
+      </div>
+    )
+
+    console.groupCollapsed('Não foi possível renderizar essa mensagem:')
+    console.log(msg)
+    console.groupEnd()
+    return (
+      <div className='d-flex flex-row'>
+        <div className={classNames(['w-75', styles.chat_message_item, styles.others_message])}>
+          <div className={styles.msg_from}>
+            Não foi possível renderizar a mensagem...
+          </div>
+        </div>
       </div>
     )
   }
