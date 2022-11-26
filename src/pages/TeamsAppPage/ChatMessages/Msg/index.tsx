@@ -122,8 +122,6 @@ const summarizeMsgFrom = (msg: IMessage, meId: IMe['id']): IMsgFrom => {
 
 const summarizeEvent = (eventDetail: any) => {
 
-  console.log(eventDetail);
-
   if (eventDetail["@odata.type"] === "#microsoft.graph.callStartedEventMessageDetail")
     return {
       type: 'callStarted',
@@ -205,6 +203,7 @@ const summarizeEvent = (eventDetail: any) => {
   console.groupCollapsed('Não foi possível renderizar essa mensagem de sistema:')
   console.log(eventDetail)
   console.groupEnd();
+  
   return {
     type: eventDetail["@odata.type"],
     message: eventDetail["@odata.type"],

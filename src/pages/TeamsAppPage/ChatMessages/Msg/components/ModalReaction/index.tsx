@@ -78,7 +78,8 @@ export default function ModalReaction({ msg, chat, token, handleAlerts, handleUp
                   const reactedBy = chat.members.filter(member => member.userId === r.user.user.id)[0];
                   const reactedByMe = reactedBy.userId === me.id;
                   return (
-                    <div className={styles.message_reaction}>
+                    <div className={styles.message_reaction}
+                      key={`${r.reactionType}${r.user.user.id}`}>
                       <span title={reactedBy.displayName} className={styles.item_reaction}>{rEmoji} {reactedBy.displayName}</span>
                       {reactedByMe ?
                         <button
@@ -124,7 +125,7 @@ const MessageReaction = ({ emoji, userId, token, handleAlerts }: IMessageReactio
   useEffect(() => {
     setLoading(true)
     GetUserById(userId, token)
-      .then(resp => { setUser(resp.data); console.log(resp.data) })
+      .then(resp => setUser(resp.data))
       .catch(e => handleAlerts(e, 'error'))
       .finally(() => setLoading(false));
 

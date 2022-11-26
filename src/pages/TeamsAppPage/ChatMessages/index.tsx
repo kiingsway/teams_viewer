@@ -44,8 +44,6 @@ export default function ChatMessages({ selectedChat, me, token, handleAlerts }: 
 
   const msgsNotDeleted = chatMessages.items.filter(msg => !msg.deletedDateTime);
 
-  console.log(selectedChat)
-
   /** Armazena o último usuário que teve a mensagem renderizada.
    * Isso serve para mensagens do mesmo usuário ficarem mais juntas e sem os seus nomes nas repetidas.
   */
