@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react'
 import { TbRefresh } from 'react-icons/tb';
-import Input from '../../../components/Input';
 import { IChat, IChatMessages, IChatsState, IMe, THandleAlerts } from '../../../interfaces';
 import { GetChats, GetViaUrl } from '../../../services/graphRequests';
 import styles from '../TeamsAppPage.module.css';
+import Form from 'react-bootstrap/Form'
+import Spinner from '../../../components/Spinner';
 
 interface Props {
   me: IMe
@@ -64,18 +65,20 @@ export default function ChatList({ token, selectedChat, me, handleChangeChat, lo
           onClick={handleGetChats}
           title='Atualizar todos os chats'
           className='btn btn-dark d-flex align-items-center fs-4'>
-          <TbRefresh />
+          <TbRefresh className={loading || loadingMessages ? styles.spin : ''} />
         </button>
       </div>
 
       <div className="mt-3">
-        <Input
+        <Form.Control
           id='txtSearch'
           value={search}
           onChange={e => setSearch(e.target.value)}
-          labelText='Pesquisar chat'
           type='search'
+          className='bg-dark text-light'
+          placeholder='Pesquisar chat...'
         />
+
       </div>
       <div className="mt-2 d-flex flex-column chats">
         {filteredChats?.map(chat => (
@@ -83,14 +86,16 @@ export default function ChatList({ token, selectedChat, me, handleChangeChat, lo
             key={chat.id}
             disabled={loading || loadingMessages}
             onClick={() => handleChangeChat(chat)}
-            className={`btn btn-dark ${styles.chat_button} ${selectedChat?.chat.id === chat.id ? 'active' : ''}`}>{chat.topic}</button>
+            className={`btn btn-dark ${styles.chat_button} ${selectedChat?.chat.id === chat.id ? 'active' : ''}`}>
+            <span className={styles.chat_button_topic}>{chat.topic}</span>
+          </button>
         ))}
 
         {chats && chats.nextLink ?
           <button
             disabled={loading || loadingMessages}
             onClick={handleGetMoreChats}
-            className='btn btn-outline-light'>{loading ? 'Obtendo...' : 'Obter mais...'}</button>
+            className='btn btn-outline-light'>{loading ? <><Spinner /> Obtendo...</> : 'Obter mais...'}</button>
           : null}
 
       </div>

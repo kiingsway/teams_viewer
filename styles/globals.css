@@ -47,3 +47,12 @@ table {
 	border-collapse: collapse;
 	border-spacing: 0;
 }
+
+@font-face {
+  font-family: 'Segoe UI Emoji';
+  src: URL('../fonts/SegoeUIEmoji-Regular.ttf') format('truetype');
+}
+
+.emoji {
+  font-family: 'Segoe UI Emoji';
+}

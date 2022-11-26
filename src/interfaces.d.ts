@@ -16,6 +16,7 @@ export interface IMe {
 }
 
 export interface IChat {
+  lastMessagePreview: any;
   id: string
   topic?: string
   createdDateTime: string
@@ -143,4 +144,19 @@ export interface IJwt {
   given_name: string;
   name: string;
   email: string;
+}
+
+export interface IUser {
+  "@odata.context": string
+  businessPhones: any[]
+  displayName: string
+  givenName: string
+  jobTitle: string
+  mail: string
+  mobilePhone: any
+  officeLocation: any
+  preferredLanguage: string
+  surname: string
+  userPrincipalName: string
+  id: string
 }

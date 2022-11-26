@@ -1,12 +1,13 @@
-import React, { Dispatch, SetStateAction, useState } from 'react'
-import { Button, Modal } from 'react-bootstrap';
+import React, { Dispatch, SetStateAction } from 'react'
 import Input from '../../components/Input';
+import Spinner from '../../components/Spinner';
+import { THandleAlerts } from '../../interfaces';
 
 interface Props {
   token: string;
   loading: boolean;
   handleLogin: () => void;
-  handleAlerts: (msg: any, type?: 'default' | 'info' | 'success' | 'warning' | 'error', timeMs?: number) => void;
+  handleAlerts: THandleAlerts;
   setToken: Dispatch<SetStateAction<string>>;
 }
 
@@ -21,7 +22,7 @@ export default function LoginPage({ token, setToken, handleLogin, loading }: Pro
         onChange={e => setToken(e.target.value)}
         labelText='Insira o token de acesso'
       />
-      
+
       <span className='mb-4'>
         Obtenha o token de acesso no site do <a target="__blank" href="https://developer.microsoft.com/pt-br/graph/graph-explorer">Graph Explorer</a>.
       </span>
@@ -30,7 +31,7 @@ export default function LoginPage({ token, setToken, handleLogin, loading }: Pro
         className='btn btn-outline-primary'
         onClick={handleLogin}
         disabled={loading || !token}>
-        {loading ? 'Carregando...' : 'Login'}
+        {loading ? <><Spinner /> Carregando...</> : 'Login'}
       </button>
 
     </div>

@@ -1,6 +1,6 @@
 import classNames from 'classnames';
 import React, { useState } from 'react'
-import { IChat, IChatMessages, IMe, IToken, THandleAlerts } from '../../interfaces';
+import { IChat, IChatMessages, IMe, IMessage, IToken, THandleAlerts } from '../../interfaces';
 import { GetChatMessages } from '../../services/graphRequests';
 import ChatList from './ChatList';
 import ChatMessages from './ChatMessages';
@@ -26,11 +26,11 @@ export default function TeamsAppPage({ me, token, handleLogout, handleAlerts }: 
         const cm = chatMessagesData.data;
         selectChat({
           chat: chat,
-          messages: cm.value.sort(sortByTime),
+          messages: cm.value.sort(byCreatedDateTime),
           nextLink: cm["@odata.nextLink"],
         });
       })
-      .catch(e =>  handleAlerts(e, 'error') )
+      .catch(e => handleAlerts(e, 'error'))
       .finally(() => setLoading(false))
   }
 
@@ -52,10 +52,9 @@ export default function TeamsAppPage({ me, token, handleLogout, handleAlerts }: 
         <div className={`col-9 ${styles.chat_row_messages} ${styles.blue_scroll}`}>
           {selectedChat && !loading ?
             <ChatMessages
-              selectedChat={selectedChat}
-              meId={me.id}
+              me={me}
               token={token}
-              selectChat={selectChat}
+              selectedChat={selectedChat}
               handleAlerts={handleAlerts} /> : null}
           {loading ? <div className='p-4 m-4 text-muted'>Carregando mensagens...</div> : null}
           {!selectedChat && !loading ? <div className='p-4 m-4 text-muted'>Selecione um chat ao lado para mostrar as mensagens...</div> : null}
@@ -91,8 +90,5 @@ function GetJwt(token: string): IToken['jwt'] | null {
   } else return null;
 }
 
-export function sortByTime(a: any, b: any) {
-  if (a.createdDateTime < b.createdDateTime) return 1;
-  if (a.createdDateTime > b.createdDateTime) return -1;
-  return 0;
-}
+export const byCreatedDateTime = (a: IMessage, b: IMessage) =>
+  a.createdDateTime < b.createdDateTime ? 1 : (a.createdDateTime > b.createdDateTime ? -1 : 0)

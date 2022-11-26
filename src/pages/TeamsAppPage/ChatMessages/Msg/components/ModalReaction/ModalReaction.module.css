@@ -1,0 +1,136 @@
+.btn_reaction {
+  background: none repeat scroll 0 0 transparent;
+  border: none;
+  border-spacing: 0;
+  font-family: 'PT Sans Narrow', sans-serif;
+  line-height: 1.2rem;
+  list-style: none outside none;
+  margin: 0;
+  padding: 0;
+  text-indent: 0;
+  text-decoration: none;
+  margin-left: 10px;
+}
+
+.emoji_picker {
+  box-shadow: rgba(0, 0, 0, 0.25) 0px 0.0625em 0.0625em, rgba(0, 0, 0, 0.25) 0px 0.125em 0.5em, rgba(0, 0, 0, 0.5) 0px 0px 0px 1px inset;
+  border-radius: 10px;
+}
+
+.modal_container {
+  background-color: #333;
+  padding: 10px;
+}
+
+.modal_info {
+  font-size: 12px;
+  margin: 5px
+}
+
+.modal_header {
+  background-color: #333;
+  border: 0;
+}
+
+.modal_footer {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  background-color: #333;
+  border: 0;
+}
+
+.message_reactions_list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 450px;
+  overflow: auto;
+  padding-right: 10px;
+  padding-bottom: 2px;
+
+}
+
+.message_reaction {
+  font-family: 'Segoe UI Emoji';
+  box-shadow: rgba(0, 0, 0, 0.25) 0px 0.0625em 0.0625em, rgba(0, 0, 0, 0.4) 0px 0px 0px 1px inset;
+  border-radius: 6px;
+  font-size: 14px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  padding: 5px;
+}
+
+.item_reaction {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  padding: 5px;
+
+}
+
+.remove_reaction {
+  background-color: transparent;
+  display: flex;
+  align-items: center;
+  border-radius: 4px;
+  border: 1px solid #FF000011;
+  padding: 2px 5px;
+  color: #FFFFFF66;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 150ms all;
+}
+
+.remove_reaction:hover {
+  background-color: red;
+  color: white;
+}
+
+.remove_reaction:active {
+  background-color: #FF000088;
+}
+
+.blue_scroll::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+.blue_scroll::-webkit-scrollbar-button {
+  width: 45px;
+  height: 45px;
+}
+
+.blue_scroll::-webkit-scrollbar-thumb {
+  background: #8484CC88;
+  border: 0px none #ffffff;
+  border-radius: 10px;
+}
+
+.blue_scroll::-webkit-scrollbar-thumb:hover {
+  background: #424266;
+}
+
+.blue_scroll::-webkit-scrollbar-thumb:active {
+  background: #393959;
+}
+
+.blue_scroll::-webkit-scrollbar-track {
+  background: #0a4a7f;
+  border: 2px double #141414;
+  border-radius: 48px;
+}
+
+.blue_scroll::-webkit-scrollbar-track:hover {
+  background: #0a4a7f;
+}
+
+.blue_scroll::-webkit-scrollbar-track:active {
+  background: #09304c;
+}
+
+.blue_scroll::-webkit-scrollbar-corner {
+  background: transparent;
+}

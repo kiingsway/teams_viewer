@@ -15,7 +15,7 @@ export function GetChats(token: string) {
 
   return axios({
     method: 'GET',
-    url: `${hostGraph}/beta/chats?$top=50&$expand=members`,
+    url: `${hostGraph}/beta/chats?$top=50&$expand=members,lastMessagePreview`,
     headers: { Authorization: token }
   })
 }
@@ -48,6 +48,16 @@ export function ReactMessage(chatId: string, msgId: string, reactionType: string
   })
 }
 
+export function RemoveReaction(chatId: string, msgId: string, reactionType: string, token: string) {
+
+  return axios({
+    url: `${hostGraph}/beta/chats/${chatId}/messages/${msgId}/unsetReaction`,
+    method: 'POST',
+    data: {reactionType},
+    headers: { Authorization: token }
+  })
+}
+
 export function GetViaUrl(url: string, token: string) {
 
   return axios({
@@ -61,7 +71,7 @@ export function GetUserById(userId: string, token: string) {
 
   return axios({
     method: 'GET',
-    url: `${hostGraph}/users/${userId}`,
+    url: `${hostGraph}/v1.0/users/${userId}?$select=displayName`,
     headers: { Authorization: token }
   })
 }
