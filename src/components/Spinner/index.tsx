@@ -1,8 +1,13 @@
+import classNames from 'classnames';
 import React from 'react';
 import styles from './Spinner.module.css';
 
-export default function Spinner() {
+interface Props {
+  className?: string;
+}
+
+export default function Spinner({ className }: Props) {
   return (
-    <span className={styles.loader} />
+    <span className={classNames([styles.loader, className])} />
   )
 }

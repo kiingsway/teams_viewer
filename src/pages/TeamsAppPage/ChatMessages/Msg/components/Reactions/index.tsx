@@ -19,7 +19,7 @@ export default function Reactions({ reactions, chatMembers }: Props) {
         return (
           <span
             key={`${r.reactionType}${r.user.user.id}`}
-            className='emoji'>
+            className={styles.emoji}>
             {emojiReaction}
           </span>
         )

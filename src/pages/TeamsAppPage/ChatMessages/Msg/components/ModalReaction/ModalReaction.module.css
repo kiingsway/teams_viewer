@@ -10,6 +10,12 @@
   text-indent: 0;
   text-decoration: none;
   margin-left: 10px;
+  transition: 300ms all;
+  font-family: 'Segoe UI Emoji';
+  border-radius: 4px;
+}
+.btn_reaction:hover {
+  background-color: #5E5E85;
 }
 
 .emoji_picker {

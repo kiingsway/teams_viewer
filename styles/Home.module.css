@@ -107,6 +107,9 @@
   margin-left: 0.5rem;
 }
 
+.emoji {
+  font-family: 'Segoe UI Emoji' !important;
+}
 
 
 @media (max-width: 600px) {

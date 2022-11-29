@@ -44,7 +44,7 @@ export default function Message({ msg, me, token, chat, sameUserBelow, handleAle
         <MsgHeader createdDateTime={message.createdDateTime} msgFrom={msgFrom} />
         <div className={styles.message_reactions}>
           <Reactions reactions={message.reactions} chatMembers={chat.members} />
-          {loading ? <Spinner /> : null}
+          {loading ? <Spinner className={styles.spinner} /> : null}
           <ModalReaction
             msg={message}
             me={me}

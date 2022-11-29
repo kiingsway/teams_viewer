@@ -61,7 +61,7 @@ export default function Home() {
 
       <ToastContainer
         position="top-center"
-        className='emoji'
+        className={styles.emoji}
         theme="colored"
         newestOnTop pauseOnFocusLoss
         closeOnClick draggable

@@ -1,3 +1,7 @@
 .message_header_reaction {
   margin-left: 6px;
 }
+
+.emoji {
+  font-family: 'Segoe UI Emoji';
+}
